@@ -1,4 +1,4 @@
-#include <serial>
+#include <Serial>
 #include <x10.h>
 #include <x10constants.h>
 
