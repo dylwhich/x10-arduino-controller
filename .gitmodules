@@ -1,0 +1,3 @@
+[submodule "arduino-x10"]
+	path = arduino-x10
+	url = https://github.com/DougC/arduino-x10.git
