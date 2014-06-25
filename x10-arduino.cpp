@@ -5,7 +5,57 @@
 #define CONTROL_BIT 1
 #define DATA_BIT 0
 
-byte convNum(byte n) {
+#define CTL_READY_STATUS 0x00
+#define CTL_TERMINATE 0x01
+
+#define READY_STATUS_NOT_READY 0x000
+#define READY_STATUS_READY 0x001
+
+#define X10_REPEAT 1
+#define X10_ZC_PIN 0
+#define X10_TX_PIN 0
+#define X10_RX_PIN 0
+
+byte x10ToNum(byte n) {
+  switch (n) {
+  case UNIT_1:
+    return 0;
+  case UNIT_2:
+    return 1;
+  case UNIT_3:
+    return 2;
+  case UNIT_4:
+    return 3;
+  case UNIT_5:
+    return 4;
+  case UNIT_6:
+    return 5;
+  case UNIT_7:
+    return 6;
+  case UNIT_8:
+    return 7;
+  case UNIT_9:
+    return 8;
+  case UNIT_10:
+    return 9;
+  case UNIT_11:
+    return 10;
+  case UNIT_12:
+    return 11;
+  case UNIT_13:
+    return 12;
+  case UNIT_14:
+    return 13;
+  case UNIT_15:
+    return 14;
+  case UNIT_16:
+    return 15;
+  default:
+    return 0b11111;
+  }
+}
+
+byte numToX10(byte n) {
   switch(n) {
   case 0:
     return UNIT_1;
