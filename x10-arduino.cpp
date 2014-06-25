@@ -53,13 +53,30 @@ byte nthNibble(byte signal[], byte n) {
 }
 
 void handleData(byte signal[]) {
-  Serial.write(signal, 4);
   // do nothing here
 }
 
 void handleControl(byte signal[]) {
-  Serial.write(signal, 4);
   // do nothing here too
+}
+
+void handleX10(byte house, byte unit, byte code) {
+  // do stuff
+}
+
+void sendX10(byte house, byte unit, byte code) {
+  // send code
+}
+
+void sendData(byte opcode, byte data1, byte datar) {
+  // send data to serial
+}
+
+void sendControl(byte opcode, byte datal, byte datar) {
+  Serial.write(opcode);
+  Serial.write(datal);
+  Serial.write(datar);
+  Serial.write(opcode ^ datal ^ datar);
 }
 
 int verifySignal(byte signal[]) {
