@@ -94,6 +94,14 @@ byte numToX10(byte n) {
   }
 }
 
+byte cmdToNum(byte n) {
+  return n >> 1;
+}
+
+byte numToCmd(byte n) {
+  return n << 1 | 1;
+}
+
 byte nthBit(byte signal[], byte n) {
   return signal[n/8] & (1 << (8 - n % 8)) >> (8 - n % 8);
 }
