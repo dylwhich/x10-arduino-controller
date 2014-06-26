@@ -137,19 +137,43 @@ int verifySignal(byte signal[]) {
 int main() {
   byte signal[4] = {0xff, 0x00, 0x00, 0xab};
   byte buf = 0;
+  bool sAvail = false, xAvail = false;
+  x10 x10lib;
 
-  buf = Serial.read();
-  
-  if (verifySignal(signal)) {
-    if (nthBit(signal, 1) == DATA_BIT) {
-      handleData(signal);
-    } else {
-      handleControl(signal);
+  Serial.begin(9600);
+  delay(500);
+
+  x10lib =  = x10(X10_ZC_PIN, X10_TX_PIN, X10_RX_PIN);
+  delay(500);
+
+  sendControl(CTL_READY_STATUS, 0, READY_STATUS_READY);
+
+  while (true) {
+    while (!(sAvail = Serial.available()) && !(xAvail = x10lib.received()));
+
+    if (xAvail) {
+      x10lib.reset();
+      handleX10(x10lib.houseCode(), x10lib.unitCode(), x10lib.cmndCode());
+      xAvail = false;
     }
-  } else {
-    signal[0] = signal[1];
-    signal[1] = signal[2];
-    signal[2] = signal[3];
-    signal[3] = buf;
+
+    if (sAvail) {
+      buf = Serial.read();
+      Serial.write(buf);
+
+      if (verifySignal(signal)) {
+	if (nthBit(signal, 1) == DATA_BIT) {
+	  handleData(signal);
+	} else {
+	  handleControl(signal);
+	}
+      } else {
+	signal[0] = signal[1];
+	signal[1] = signal[2];
+	signal[2] = signal[3];
+	signal[3] = buf;
+      }
+      sAvail = false;
+    }
   }
 }
