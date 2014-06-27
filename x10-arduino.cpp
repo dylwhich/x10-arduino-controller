@@ -11,10 +11,11 @@
 #define READY_STATUS_NOT_READY 0x000
 #define READY_STATUS_READY 0x001
 
-#define X10_REPEAT 1
-#define X10_ZC_PIN 0
-#define X10_TX_PIN 0
-#define X10_RX_PIN 0
+#define X10_REPEAT 7
+
+#define X10_ZC_PIN 2
+#define X10_RX_PIN 4
+#define X10_TX_PIN 5
 
 byte x10ToNum(byte n) {
   switch (n) {
@@ -146,18 +147,17 @@ int main() {
   byte signal[4] = {0xff, 0x00, 0x00, 0xab};
   byte buf = 0;
   bool sAvail = false, xAvail = false;
-  x10 x10lib;
+  x10 x10lib = x10(X10_ZC_PIN, X10_TX_PIN, X10_RX_PIN);
 
   Serial.begin(9600);
   delay(500);
 
-  x10lib =  = x10(X10_ZC_PIN, X10_TX_PIN, X10_RX_PIN);
-  delay(500);
+  Serial.println("I'M READY!");
 
   sendControl(CTL_READY_STATUS, 0, READY_STATUS_READY);
 
   while (true) {
-    while (!(sAvail = Serial.available()) && !(xAvail = x10lib.received()));
+    while (!sAvail && !xAvail && !(sAvail = Serial.available()) && !(xAvail = x10lib.received()));
 
     if (xAvail) {
       x10lib.reset();
