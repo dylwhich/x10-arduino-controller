@@ -22,43 +22,51 @@ byte buf = 0x00;
 bool sAvail = false, xAvail = false;
 x10 x10lib = x10(X10_ZC_PIN, X10_TX_PIN, X10_RX_PIN);
 
-byte unitToNum(byte n) {
-  switch (n) {
-  case UNIT_1:
-    return 0;
-  case UNIT_2:
-    return 1;
-  case UNIT_3:
-    return 2;
-  case UNIT_4:
-    return 3;
-  case UNIT_5:
-    return 4;
-  case UNIT_6:
-    return 5;
-  case UNIT_7:
-    return 6;
-  case UNIT_8:
-    return 7;
-  case UNIT_9:
-    return 8;
-  case UNIT_10:
-    return 9;
-  case UNIT_11:
-    return 10;
-  case UNIT_12:
-    return 11;
-  case UNIT_13:
-    return 12;
-  case UNIT_14:
-    return 13;
-  case UNIT_15:
-    return 14;
-  case UNIT_16:
-    return 15;
+byte houseToNum(byte n) {
+  return n - 'A';
+}
+
+byte numToHouse(byte n) {
+  switch(n) {
+  case 0:
+    return HOUSE_A;
+  case 1:
+    return HOUSE_B;
+  case 2:
+    return HOUSE_C;
+  case 3:
+    return HOUSE_D;
+  case 4:
+    return HOUSE_E;
+  case 5:
+    return HOUSE_F;
+  case 6:
+    return HOUSE_G;
+  case 7:
+    return HOUSE_H;
+  case 8:
+    return HOUSE_I;
+  case 9:
+    return HOUSE_J;
+  case 10:
+    return HOUSE_K;
+  case 11:
+    return HOUSE_L;
+  case 12:
+    return HOUSE_M;
+  case 13:
+    return HOUSE_N;
+  case 14:
+    return HOUSE_O;
+  case 15:
+    return HOUSE_P;
   default:
-    return 0b11111;
+    return HOUSE_A;
   }
+}
+
+byte unitToNum(byte n) {
+  return (n - 1) & 0x0f;
 }
 
 byte numToUnit(byte n) {
@@ -96,7 +104,7 @@ byte numToUnit(byte n) {
   case 15:
     return UNIT_16;
   default:
-    return 0b11111;
+    return UNIT_1;
   }
 }
 
@@ -119,13 +127,13 @@ byte nthNibble(byte signal[], byte n) {
 void handleData(byte signal[]) {
   byte house, unit, code;
   house = signal[0] & 0x0f;
-  unit = (signal[1] & 0xf0) >> 4;
+  unit = (signal[1] >> 4) & 0x0f;
   code = (signal[1] & 0x0f);
   sendX10(house, unit, code);
 }
 
 void handleControl(byte signal[]) {
-  // do nothing here too
+  
 }
 
 void handleX10(byte house, byte unit, byte code) {
@@ -139,8 +147,8 @@ void sendX10(byte house, byte unit, byte code) {
 
 void sendData(byte house, byte unit, byte code) {
   byte b1, b2, b3;
-  b1 = ((DATA_HEADER << 4) & 0xf0) | (unitToNum(house << 1) & 0x0f);
-  b2 = ((unitToNum(unit) << 4) & 0xf0) | ((cmdToNum(code) & 0x0f));
+  b1 = ((DATA_HEADER << 4) & 0xf0) | (houseToNum(house) & 0x0f);
+  b2 = ((unitToNum(unit) << 4) & 0xf0) | (cmdToNum(code) & 0x0f);
   b3 = X10_REPEAT;
   Serial.write(b1);
   Serial.write(b2);
