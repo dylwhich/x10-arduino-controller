@@ -7,6 +7,7 @@
 
 #define CTL_READY_STATUS 0b0000
 #define CTL_TERMINATE 0b0001
+#define CTL_ACKNOWLEDGE 0b0010
 
 #define READY_STATUS_NOT_READY 0
 #define READY_STATUS_READY 1
@@ -126,23 +127,26 @@ byte nthNibble(byte signal[], byte n) {
 
 void handleData(byte signal[]) {
   byte house, unit, code;
-  house = signal[0] & 0x0f;
-  unit = (signal[1] >> 4) & 0x0f;
-  code = (signal[1] & 0x0f);
-  sendX10(house, unit, code);
+  house = numToHouse(signal[0] & 0x0f);
+  unit = numToUnit((signal[1] >> 4) & 0x0f);
+  code = numToCmd((signal[1] & 0x0f));
+  sendX10(house, unit, code, signal[2]);
+  sendControl(CTL_ACKNOWLEDGE, 0, 0);
 }
 
 void handleControl(byte signal[]) {
-  
+  // TODO
 }
 
 void handleX10(byte house, byte unit, byte code) {
   sendData(house, unit, code);
 }
 
-void sendX10(byte house, byte unit, byte code) {
-  x10lib.write(house, unit, X10_REPEAT);
-  x10lib.write(house, code, X10_REPEAT);
+void sendX10(byte house, byte unit, byte code, byte repeat) {
+  if (repeat < 1)
+    repeat = 1;
+  x10lib.write(house, unit, repeat * X10_REPEAT);
+  x10lib.write(house, code, repeat * X10_REPEAT);
 }
 
 void sendData(byte house, byte unit, byte code) {
