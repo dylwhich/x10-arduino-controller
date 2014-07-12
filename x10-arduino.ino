@@ -20,7 +20,8 @@
 
 byte signal[] = {0xff, 0x00, 0x00, 0xab};
 byte buf = 0x00;
-bool sAvail = false, xAvail = false;
+byte sAvail = 0;
+boolean xAvail = false;
 x10 x10lib = x10(X10_ZC_PIN, X10_TX_PIN, X10_RX_PIN);
 
 byte houseToNum(byte n) {
