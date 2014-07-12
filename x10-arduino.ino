@@ -117,7 +117,11 @@ byte nthNibble(byte signal[], byte n) {
 }
 
 void handleData(byte signal[]) {
-  // do nothing here
+  byte house, unit, code;
+  house = signal[0] & 0x0f;
+  unit = (signal[1] & 0xf0) >> 4;
+  code = (signal[1] & 0x0f);
+  sendX10(house, unit, code);
 }
 
 void handleControl(byte signal[]) {
@@ -134,17 +138,21 @@ void sendX10(byte house, byte unit, byte code) {
 }
 
 void sendData(byte house, byte unit, byte code) {
-  Serial.write(DATA_HEADER << 4 | unitToNum(house << 1) & 0xf);
-  Serial.write(unitToNum(unit) << 4 | cmdToNum(code) & 0xf);
-  Serial.write((byte) X10_REPEAT);
-  Serial.write((DATA_HEADER << 4 | unitToNum(house << 1) & 0xf) ^ (unitToNum(unit) << 4 | cmdToNum(code) & 0xf) ^ ((byte) X10_REPEAT));
+  byte b1, b2, b3;
+  b1 = ((DATA_HEADER << 4) & 0xf0) | (unitToNum(house << 1) & 0x0f);
+  b2 = ((unitToNum(unit) << 4) & 0xf0) | ((cmdToNum(code) & 0x0f));
+  b3 = X10_REPEAT;
+  Serial.write(b1);
+  Serial.write(b2);
+  Serial.write(b3);
+  Serial.write(b1 ^ b2 ^ b3);
 }
 
 void sendControl(byte opcode, byte val_hi, byte val_lo) {
-  Serial.write(DATA_HEADER << 4 | opcode & 0xf);
+  Serial.write((DATA_HEADER << 4) | (opcode & 0xf));
   Serial.write(val_hi);
   Serial.write(val_lo);
-  Serial.write((DATA_HEADER << 4 | opcode & 0xf) ^ val_lo ^ val_hi);
+  Serial.write(((DATA_HEADER << 4) | (opcode & 0xf)) ^ val_lo ^ val_hi);
 }
 
 int verifySignal(byte signal[]) {
@@ -170,7 +178,11 @@ void loop() {
 
   if (sAvail) {
     buf = Serial.read();
-    Serial.write(buf);
+
+    signal[0] = signal[1];
+    signal[1] = signal[2];
+    signal[2] = signal[3];
+    signal[3] = buf;
 
     if (verifySignal(signal)) {
       if (nthBit(signal, 1) == 0) {
@@ -178,11 +190,6 @@ void loop() {
       } else {
 	handleControl(signal);
       }
-    } else {
-      signal[0] = signal[1];
-      signal[1] = signal[2];
-      signal[2] = signal[3];
-      signal[3] = buf;
     }
     sAvail = false;
   }
