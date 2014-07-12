@@ -110,19 +110,11 @@ byte numToUnit(byte n) {
 }
 
 byte cmdToNum(byte n) {
-  return n >> 1;
+  return (n >> 1) & 0x0f;
 }
 
 byte numToCmd(byte n) {
-  return n << 1 | 1;
-}
-
-byte nthBit(byte signal[], byte n) {
-  return signal[n/8] & (1 << (8 - n % 8)) >> (8 - n % 8);
-}
-
-byte nthNibble(byte signal[], byte n) {
-  return signal[n/2] & (0xf << (2 - n % 2)) >> (2 - n % 2);
+  return ((n & 0x0f) << 1) | 0x01;
 }
 
 void handleData(byte signal[]) {
@@ -161,15 +153,15 @@ void sendData(byte house, byte unit, byte code) {
 }
 
 void sendControl(byte opcode, byte val_hi, byte val_lo) {
-  Serial.write((DATA_HEADER << 4) | (opcode & 0xf));
+  Serial.write((CONTROL_HEADER << 4) | (opcode & 0xf));
   Serial.write(val_hi);
   Serial.write(val_lo);
-  Serial.write(((DATA_HEADER << 4) | (opcode & 0xf)) ^ val_lo ^ val_hi);
+  Serial.write(((CONTROL_HEADER << 4) | (opcode & 0xf)) ^ val_lo ^ val_hi);
 }
 
 int verifySignal(byte signal[]) {
   byte checksum = signal[0] ^ signal[1] ^ signal[2];
-  return checksum == signal[3] && nthBit(signal, 1) == 0x01;
+  return (checksum == signal[3]) && ((signal[0] & 0x80) == 0x80);
 }
 
 void setup() {
@@ -197,12 +189,12 @@ void loop() {
     signal[3] = buf;
 
     if (verifySignal(signal)) {
-      if (nthBit(signal, 1) == 0) {
+      if ((signal[0] >> 4) == DATA_HEADER) {
 	handleData(signal);
-      } else {
+      } else if ((signal[0] >> 4) == CONTROL_HEADER) {
 	handleControl(signal);
       }
     }
-    sAvail = false;
+    sAvail = 0;
   }
 }
